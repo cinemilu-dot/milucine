@@ -218,7 +218,7 @@ app.get('/', verificarAutenticacao, (req, res) => {
                 }
                 iframe {
                     width: 100%;
-                    height: calc(100% + 380px);
+                    height: calc(100% + 390px);
                     border: none;
                     margin-top: -120px;
                 }
