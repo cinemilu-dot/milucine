@@ -237,7 +237,7 @@ app.get('/', verificarAutenticacao, (req, res) => {
     `);
 });
 
-// Rota Dinâmica para Extrair e Listar os Links Diretos por ID
+// Rota Dinâmica para Extrair e Reproduzir Episódios por ID
 app.get('/player/:id', verificarAutenticacao, async (req, res) => {
     const episodeId = req.params.id;
     try {
@@ -288,12 +288,10 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
                     if (match) streamUrl = `https://streambetter.lol/serie/${match[1]}`;
                 }
                 const tipoAudio = canal.type === 1 ? 'Dublado' : 'Legendado';
-
-                // Exibe o player de vídeo limpo, extraído diretamente pelo backend
                 listaCanaisHtml += `
-                    <div style="background: #1a1c23; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #232635;">
-                        <h4 style="color: #e50914; margin-top: 0; margin-bottom: 10px;">Opção ${i + 1} (${tipoAudio})</h4>
-                        <iframe src="${streamUrl}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%; aspect-ratio:16/9; border:0; border-radius:8px; background:#000;"></iframe>
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #aaa; margin-bottom: 8px;">Opção ${i + 1} (${tipoAudio})</h4>
+                        <iframe src="${streamUrl}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000;"></iframe>
                     </div>
                 `;
             }
@@ -302,13 +300,9 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
         res.send(`
             <!DOCTYPE html>
             <html lang="pt-BR">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Player - ID ${episodeId}</title>
-            </head>
+            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Player - ID ${episodeId}</title></head>
             <body style="background:#0f1014; color:#fff; font-family:sans-serif; padding:20px; max-width:900px; margin:auto;">
-                <h2>📺 Episódio (ID: ${episodeId})</h2>
+                <h2>📺 Reprodutor de Episódio (ID: ${episodeId})</h2>
                 <a href="/" style="color:#e50914; text-decoration:none; display:inline-block; margin-bottom:20px;">← Voltar ao Início</a>
                 ${listaCanaisHtml || '<p>Nenhum link gerado com sucesso.</p>'}
             </body>
@@ -316,7 +310,7 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
         `);
     } catch (err) {
         console.error('Erro na rota /player:', err.message);
-        res.status(500).send(`<h3 style="color:red;text-align:center;font-family:sans-serif;margin-top:20vh;">❌ Erro interno ao processar o vídeo. Tente novamente.</h3>`);
+        res.status(500).send(`<h3 style="color:red;text-align:center;font-family:sans-serif;margin-top:20vh;">❌ Erro interno ao processar o vídeo no telemóvel. Tente novamente.</h3>`);
     }
 });
 
