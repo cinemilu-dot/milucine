@@ -300,7 +300,14 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
         res.send(`
             <!DOCTYPE html>
             <html lang="pt-BR">
-            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Player - ID ${episodeId}</title></head>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Player - ID ${episodeId}</title>
+                <style>
+                    .embed-btn { display: none !important; }
+                </style>
+            </head>
             <body style="background:#0f1014; color:#fff; font-family:sans-serif; padding:20px; max-width:900px; margin:auto;">
                 <h2>📺 Reprodutor de Episódio (ID: ${episodeId})</h2>
                 <a href="/" style="color:#e50914; text-decoration:none; display:inline-block; margin-bottom:20px;">← Voltar ao Início</a>
