@@ -111,7 +111,7 @@ app.post('/login', (req, res) => {
     return res.redirect('/');
 });
 
-// Página Principal (Catálogo com margin-top ajustado para -190px)
+// Página Principal (Catálogo corrigido)
 app.get('/', verificarAutenticacao, (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -170,10 +170,10 @@ app.get('/', verificarAutenticacao, (req, res) => {
                 }
                 iframe {
                     width: 100%;
-                    height: calc(100% + 280px);
+                    height: calc(100% + 50px);
                     border: none;
-                    margin-top: -190px;
-                    margin-bottom: -160px;
+                    margin-top: 0px;
+                    margin-bottom: -220px;
                 }
             </style>
         </head>
