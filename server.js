@@ -230,7 +230,10 @@ app.get('/', verificarAutenticacao, (req, res) => {
                 <a href="/logout" class="btn-logout">Sair</a>
             </div>
             <div class="portal-container">
-                <iframe src="${STREAMBETTER_CATALOGO}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+                <iframe src="${STREAMBETTER_CATALOGO}" 
+                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-autoplay"
+                        allowfullscreen 
+                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
             </div>
         </body>
         </html>
@@ -291,7 +294,11 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
                 listaCanaisHtml += `
                     <div style="margin-bottom: 20px;">
                         <h4 style="color: #aaa; margin-bottom: 8px;">Opção ${i + 1} (${tipoAudio})</h4>
-                        <iframe src="${streamUrl}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000;"></iframe>
+                        <iframe src="${streamUrl}" 
+                                sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-autoplay"
+                                allow="autoplay; encrypted-media; picture-in-picture; fullscreen" 
+                                allowfullscreen 
+                                style="width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000;"></iframe>
                     </div>
                 `;
             }
