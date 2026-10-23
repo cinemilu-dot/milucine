@@ -105,7 +105,6 @@ const verificarAutenticacao = (req, res, next) => {
         return res.redirect('/login');
     }
 
-    // Atualiza o timestamp da sessão no uso ativo
     sessoesAtivas.get(usuario).set(sessionId, Date.now());
     return next();
 };
@@ -122,17 +121,14 @@ app.post('/login', (req, res) => {
         return res.send(telaLogin('❌ Usuário ou senha incorretos!'));
     }
 
-    // Limpa sessões expiradas primeiro
     limparSessoesExpiradas(usuario);
 
-    // Garante obrigatoriamente que o Map do usuário existe para evitar leituras de undefined (.size)
     if (!sessoesAtivas.has(usuario)) {
         sessoesAtivas.set(usuario, new Map());
     }
     
     const sessoesDoUsuario = sessoesAtivas.get(usuario);
 
-    // ESTRATÉGIA: Se ultrapassar o limite de 2 conexões, remove a sessão mais antiga
     if (sessoesDoUsuario.size >= 2) {
         let menorTimestamp = Infinity;
         let sessaoMaisAntiga = null;
@@ -231,7 +227,7 @@ app.get('/', verificarAutenticacao, (req, res) => {
             </div>
             <div class="portal-container">
                 <iframe src="${STREAMBETTER_CATALOGO}" 
-                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-autoplay allow-popups allow-popups-to-escape-sandbox"
+                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-autoplay"
                         allowfullscreen 
                         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
             </div>
@@ -291,14 +287,18 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
                     if (match) streamUrl = `https://streambetter.lol/serie/${match[1]}`;
                 }
                 const tipoAudio = canal.type === 1 ? 'Dublado' : 'Legendado';
+                
+                // Envolvemos o iframe num container com script para capturar cliques de pop-up invisíveis gerados pelo player
                 listaCanaisHtml += `
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #aaa; margin-bottom: 8px;">Opção ${i + 1} (${tipoAudio})</h4>
-                        <iframe src="${streamUrl}" 
-                                sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-autoplay allow-popups allow-popups-to-escape-sandbox"
-                                allow="autoplay; encrypted-media; picture-in-picture; fullscreen" 
-                                allowfullscreen 
-                                style="width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000;"></iframe>
+                    <div style="margin-bottom: 25px; background: #1a1c23; padding: 15px; border-radius: 16px; border: 1px solid #232635;">
+                        <h4 style="color: #fff; margin: 0 0 10px 0; font-size: 0.95rem;">Opção ${i + 1} (${tipoAudio})</h4>
+                        <div style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden;">
+                            <iframe src="${streamUrl}" 
+                                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-autoplay"
+                                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen" 
+                                    allowfullscreen 
+                                    style="width:100%; height:100%; border:0; background:#000;"></iframe>
+                        </div>
                     </div>
                 `;
             }
@@ -307,17 +307,33 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
         res.send(`
             <!DOCTYPE html>
             <html lang="pt-BR">
-            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Player - ID ${episodeId}</title></head>
-            <body style="background:#0f1014; color:#fff; font-family:sans-serif; padding:20px; max-width:900px; margin:auto;">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Player - ID ${episodeId}</title>
+                <style>
+                    body { background: #0f1014; color: #fff; font-family: sans-serif; padding: 20px; max-width: 900px; margin: auto; }
+                    h2 { font-size: 1.2rem; margin-bottom: 10px; }
+                    .back-link { color: #e50914; text-decoration: none; display: inline-block; margin-bottom: 20px; font-weight: bold; }
+                </style>
+            </head>
+            <body>
                 <h2>📺 Reprodutor de Episódio (ID: ${episodeId})</h2>
-                <a href="/" style="color:#e50914; text-decoration:none; display:inline-block; margin-bottom:20px;">← Voltar ao Início</a>
+                <a href="/" class="back-link">← Voltar ao Início</a>
                 ${listaCanaisHtml || '<p>Nenhum link gerado com sucesso.</p>'}
+                <script>
+                    // Bloqueia qualquer tentativa global de abertura de janelas indesejadas na página do player
+                    window.open = function() {
+                        console.warn("Tentativa de pop-up bloqueada pelo script.");
+                        return null;
+                    };
+                </script>
             </body>
             </html>
         `);
     } catch (err) {
         console.error('Erro na rota /player:', err.message);
-        res.status(500).send(`<h3 style="color:red;text-align:center;font-family:sans-serif;margin-top:20vh;">❌ Erro interno ao processar o vídeo no telemóvel. Tente novamente.</h3>`);
+        res.status(500).send(`<h3 style="color:red;text-align:center;font-family:sans-serif;margin-top:20vh;">❌ Erro interno ao processar o vídeo. Tente novamente.</h3>`);
     }
 });
 
