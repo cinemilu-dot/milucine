@@ -9,10 +9,32 @@ const API_URL = 'https://plenoflu.com/api';
 const STREAMBETTER_CATALOGO = 'https://streambetter.lol/catalogo';
 const ARQUIVO_USUARIOS = path.join(__dirname, 'usuarios.json');
 
+// Tempo limite de inatividade da sessão (ex: 12 horas)
+const TEMPO_EXPIRACAO_MS = 12 * 60 * 60 * 1000; 
+
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Estrutura para armazenar sessões com timestamp: Map<usuario, Map<sessionId, timestamp>>
 const sessoesAtivas = new Map();
+
+// Função para limpar sessões antigas/expiradas de um usuário
+function limparSessoesExpiradas(usuario) {
+    if (!sessoesAtivas.has(usuario)) return;
+
+    const sessoesDoUsuario = sessoesAtivas.get(usuario);
+    const agora = Date.now();
+
+    for (const [sessionId, timestamp] of sessoesDoUsuario.entries()) {
+        if (agora - timestamp > TEMPO_EXPIRACAO_MS) {
+            sessoesDoUsuario.delete(sessionId);
+        }
+    }
+
+    if (sessoesDoUsuario.size === 0) {
+        sessoesAtivas.delete(usuario);
+    }
+}
 
 function carregarUsuarios() {
     try {
@@ -71,12 +93,20 @@ function telaLogin(erro = '') {
 
 const verificarAutenticacao = (req, res, next) => {
     const { usuario, sessionId } = req.cookies;
+
+    if (usuario) {
+        limparSessoesExpiradas(usuario);
+    }
+
     if (!usuario || !sessionId || !sessoesAtivas.has(usuario) || !sessoesAtivas.get(usuario).has(sessionId)) {
         res.clearCookie('autenticado');
         res.clearCookie('usuario');
         res.clearCookie('sessionId');
         return res.redirect('/login');
     }
+
+    // Atualiza o timestamp da sessão no uso ativo
+    sessoesAtivas.get(usuario).set(sessionId, Date.now());
     return next();
 };
 
@@ -93,16 +123,33 @@ app.post('/login', (req, res) => {
     }
 
     if (!sessoesAtivas.has(usuario)) {
-        sessoesAtivas.set(usuario, new Set());
+        sessoesAtivas.set(usuario, new Map());
     }
+
+    // Limpa sessões expiradas antes de checar a quantidade
+    limparSessoesExpiradas(usuario);
     const sessoesDoUsuario = sessoesAtivas.get(usuario);
 
+    // ESTRATÉGIA: Se ultrapassar o limite de 2 conexões, remove a sessão mais antiga para abrir espaço para a nova
     if (sessoesDoUsuario.size >= 2) {
-        return res.send(telaLogin(`❌ Limite de 2 conexões simultâneas atingido para "${usuario}".`));
+        // Encontra a chave da sessão mais antiga
+        let menorTimestamp = Infinity;
+        let sessaoMaisAntiga = null;
+
+        for (const [sId, timestamp] of sessoesDoUsuario.entries()) {
+            if (timestamp < menorTimestamp) {
+                menorTimestamp = timestamp;
+                sessaoMaisAntiga = sId;
+            }
+        }
+
+        if (sessaoMaisAntiga) {
+            sessoesDoUsuario.delete(sessaoMaisAntiga);
+        }
     }
 
     const novoSessionId = 'sess_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-    sessoesDoUsuario.add(novoSessionId);
+    sessoesDoUsuario.set(novoSessionId, Date.now());
 
     res.cookie('autenticado', 'true', { httpOnly: true });
     res.cookie('usuario', usuario, { httpOnly: true });
@@ -111,7 +158,7 @@ app.post('/login', (req, res) => {
     return res.redirect('/');
 });
 
-// Página Principal (Catálogo com o tamanho original restaurado)
+// Página Principal
 app.get('/', verificarAutenticacao, (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -252,7 +299,9 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
 
 app.get('/logout', (req, res) => {
     const { usuario, sessionId } = req.cookies;
-    if (usuario && sessoesAtivas.has(usuario)) sessoesAtivas.get(usuario).delete(sessionId);
+    if (usuario && sessoesAtivas.has(usuario)) {
+        sessoesAtivas.get(usuario).delete(sessionId);
+    }
     res.clearCookie('autenticado');
     res.clearCookie('usuario');
     res.clearCookie('sessionId');
