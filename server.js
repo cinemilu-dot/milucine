@@ -9,7 +9,7 @@ const API_URL = 'https://plenoflu.com/api';
 const STREAMBETTER_CATALOGO = 'https://streambetter.lol/catalogo';
 const ARQUIVO_USUARIOS = path.join(__dirname, 'usuarios.json');
 
-// Tempo limite de inatividade da sessão (12 horas)
+// Tempo limite de inatividade da sessão (ex: 12 horas)
 const TEMPO_EXPIRACAO_MS = 12 * 60 * 60 * 1000; 
 
 app.use(express.urlencoded({ extended: true }));
@@ -105,6 +105,7 @@ const verificarAutenticacao = (req, res, next) => {
         return res.redirect('/login');
     }
 
+    // Atualiza o timestamp da sessão no uso ativo
     sessoesAtivas.get(usuario).set(sessionId, Date.now());
     return next();
 };
@@ -121,14 +122,17 @@ app.post('/login', (req, res) => {
         return res.send(telaLogin('❌ Usuário ou senha incorretos!'));
     }
 
+    // Limpa sessões expiradas primeiro
     limparSessoesExpiradas(usuario);
 
+    // Garante obrigatoriamente que o Map do usuário existe para evitar leituras de undefined (.size)
     if (!sessoesAtivas.has(usuario)) {
         sessoesAtivas.set(usuario, new Map());
     }
     
     const sessoesDoUsuario = sessoesAtivas.get(usuario);
 
+    // ESTRATÉGIA: Se ultrapassar o limite de 2 conexões, remove a sessão mais antiga
     if (sessoesDoUsuario.size >= 2) {
         let menorTimestamp = Infinity;
         let sessaoMaisAntiga = null;
@@ -155,14 +159,13 @@ app.post('/login', (req, res) => {
     return res.redirect('/');
 });
 
-// Página Principal (Catálogo)
+// Página Principal
 app.get('/', verificarAutenticacao, (req, res) => {
     res.send(`
         <!DOCTYPE html>
         <html lang="pt-BR">
         <head>
             <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>MiluCine - Portal</title>
             <style>
                 body {
@@ -227,18 +230,14 @@ app.get('/', verificarAutenticacao, (req, res) => {
                 <a href="/logout" class="btn-logout">Sair</a>
             </div>
             <div class="portal-container">
-                <iframe src="${STREAMBETTER_CATALOGO}" 
-                        allowfullscreen 
-                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen" 
-                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups">
-                </iframe>
+                <iframe src="${STREAMBETTER_CATALOGO}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
             </div>
         </body>
         </html>
     `);
 });
 
-// Rota Dinâmica para Extrair e Reproduzir Episódios por ID (Com pop-ups liberados para o player carregar)
+// Rota Dinâmica para Extrair e Reproduzir Episódios por ID
 app.get('/player/:id', verificarAutenticacao, async (req, res) => {
     const episodeId = req.params.id;
     try {
@@ -292,12 +291,7 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
                 listaCanaisHtml += `
                     <div style="margin-bottom: 20px;">
                         <h4 style="color: #aaa; margin-bottom: 8px;">Opção ${i + 1} (${tipoAudio})</h4>
-                        <iframe src="${streamUrl}" 
-                                allow="autoplay; encrypted-media; picture-in-picture; fullscreen" 
-                                allowfullscreen 
-                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation" 
-                                style="width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000;">
-                        </iframe>
+                        <iframe src="${streamUrl}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000;"></iframe>
                     </div>
                 `;
             }
@@ -316,7 +310,7 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
         `);
     } catch (err) {
         console.error('Erro na rota /player:', err.message);
-        res.status(500).send(`<h3 style="color:red;text-align:center;font-family:sans-serif;margin-top:20vh;">❌ Erro interno ao processar o vídeo. Tente novamente.</h3>`);
+        res.status(500).send(`<h3 style="color:red;text-align:center;font-family:sans-serif;margin-top:20vh;">❌ Erro interno ao processar o vídeo no telemóvel. Tente novamente.</h3>`);
     }
 });
 
