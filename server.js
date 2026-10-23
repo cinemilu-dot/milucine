@@ -105,7 +105,6 @@ const verificarAutenticacao = (req, res, next) => {
         return res.redirect('/login');
     }
 
-    // Atualiza o timestamp da sessão no uso ativo
     sessoesAtivas.get(usuario).set(sessionId, Date.now());
     return next();
 };
@@ -156,7 +155,7 @@ app.post('/login', (req, res) => {
     return res.redirect('/');
 });
 
-// Página Principal (Catálogo com bloqueio de pop-ups/anúncios)
+// Página Principal (Catálogo)
 app.get('/', verificarAutenticacao, (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -231,7 +230,7 @@ app.get('/', verificarAutenticacao, (req, res) => {
                 <iframe src="${STREAMBETTER_CATALOGO}" 
                         allowfullscreen 
                         allow="autoplay; encrypted-media; picture-in-picture; fullscreen" 
-                        sandbox="allow-scripts allow-same-origin allow-forms">
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups">
                 </iframe>
             </div>
         </body>
@@ -239,7 +238,7 @@ app.get('/', verificarAutenticacao, (req, res) => {
     `);
 });
 
-// Rota Dinâmica para Extrair e Reproduzir Episódios por ID (Com bloqueio de pop-ups)
+// Rota Dinâmica para Extrair e Reproduzir Episódios por ID (Com pop-ups liberados para o player carregar)
 app.get('/player/:id', verificarAutenticacao, async (req, res) => {
     const episodeId = req.params.id;
     try {
@@ -296,7 +295,7 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
                         <iframe src="${streamUrl}" 
                                 allow="autoplay; encrypted-media; picture-in-picture; fullscreen" 
                                 allowfullscreen 
-                                sandbox="allow-scripts allow-same-origin allow-forms" 
+                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation" 
                                 style="width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000;">
                         </iframe>
                     </div>
