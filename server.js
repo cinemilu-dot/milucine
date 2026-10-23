@@ -111,7 +111,7 @@ app.post('/login', (req, res) => {
     return res.redirect('/');
 });
 
-// Página Principal (Catálogo)
+// Página Principal (Catálogo com o iframe corrigido para ocultar a barra superior)
 app.get('/', verificarAutenticacao, (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -120,13 +120,60 @@ app.get('/', verificarAutenticacao, (req, res) => {
             <meta charset="UTF-8">
             <title>MiluCine - Portal</title>
             <style>
-                body { margin: 0; background-color: #0f1014; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-                .header-bar { width: 100%; background: #1a1c23; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; border-bottom: 1px solid #232635; }
-                .header-title { font-size: 1rem; font-weight: bold; color: #e50914; }
-                .btn-logout { background: transparent; border: 1px solid #232635; color: #aaa; padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.85rem; }
-                .btn-logout:hover { border-color: #e50914; color: #fff; }
-                .portal-container { width: 100%; flex: 1; position: relative; }
-                iframe { width: 100%; height: 100%; border: none; }
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background-color: #0f1014;
+                    color: #fff;
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    flex-direction: column;
+                    height: 100vh;
+                    overflow: hidden;
+                }
+                .header-bar {
+                    width: 100%;
+                    background: #1a1c23;
+                    padding: 10px 20px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    box-sizing: border-box;
+                    border-bottom: 1px solid #232635;
+                    z-index: 10;
+                }
+                .header-title {
+                    font-size: 1rem;
+                    font-weight: bold;
+                    color: #e50914;
+                }
+                .btn-logout {
+                    background: transparent;
+                    border: 1px solid #232635;
+                    color: #aaa;
+                    padding: 6px 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    text-decoration: none;
+                    font-size: 0.85rem;
+                }
+                .btn-logout:hover {
+                    border-color: #e50914;
+                    color: #fff;
+                }
+                .portal-container {
+                    width: 100%;
+                    flex: 1;
+                    background: #0f1014;
+                    position: relative;
+                    overflow: hidden;
+                }
+                iframe {
+                    width: 100%;
+                    height: calc(100% + 140px);
+                    border: none;
+                    margin-top: -120px;
+                }
             </style>
         </head>
         <body>
