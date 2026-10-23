@@ -111,7 +111,7 @@ app.post('/login', (req, res) => {
     return res.redirect('/');
 });
 
-// Página Principal (Catálogo com iframe ajustado para esconder topo e rodapé)
+// Página Principal (Catálogo com o iframe corrigido para ocultar a barra superior)
 app.get('/', verificarAutenticacao, (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -170,10 +170,9 @@ app.get('/', verificarAutenticacao, (req, res) => {
                 }
                 iframe {
                     width: 100%;
-                    height: calc(100% + 280px);
+                    height: calc(100% + 140px);
                     border: none;
                     margin-top: -120px;
-                    margin-bottom: -160px;
                 }
             </style>
         </head>
