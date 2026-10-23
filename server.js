@@ -170,7 +170,7 @@ app.get('/', verificarAutenticacao, (req, res) => {
                 }
                 iframe {
                     width: 100%;
-                    height: calc(100% + 360px);
+                    height: calc(100% + 380px);
                     border: none;
                     margin-top: -140px;
                 }
