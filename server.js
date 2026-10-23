@@ -111,7 +111,7 @@ app.post('/login', (req, res) => {
     return res.redirect('/');
 });
 
-// Página Principal (Catálogo com o rodapé cortado por completo)
+// Página Principal (Catálogo com o tamanho original restaurado)
 app.get('/', verificarAutenticacao, (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -170,10 +170,9 @@ app.get('/', verificarAutenticacao, (req, res) => {
                 }
                 iframe {
                     width: 100%;
-                    height: calc(100% + 500px);
+                    height: calc(100% + 340px);
                     border: none;
-                    margin-top: -350px;
-                    margin-bottom: 0px;
+                    margin-top: -70px;
                 }
             </style>
         </head>
@@ -190,7 +189,7 @@ app.get('/', verificarAutenticacao, (req, res) => {
     `);
 });
 
-// Rota Dinâmica para Extrair e Reproduzir Episódios por ID (Ex: /player/248147)
+// Rota Dinâmica para Extrair e Reproduzir Episódios por ID
 app.get('/player/:id', verificarAutenticacao, async (req, res) => {
     const episodeId = req.params.id;
     try {
@@ -261,5 +260,5 @@ app.get('/logout', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor web rodando na porta ${PORT}`);
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
