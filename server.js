@@ -111,7 +111,7 @@ app.post('/login', (req, res) => {
     return res.redirect('/');
 });
 
-// Página Principal (Catálogo corrigido)
+// Página Principal (Catálogo com corte correto apenas no topo)
 app.get('/', verificarAutenticacao, (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -170,10 +170,10 @@ app.get('/', verificarAutenticacao, (req, res) => {
                 }
                 iframe {
                     width: 100%;
-                    height: calc(100% + 50px);
+                    height: calc(100% + 120px);
                     border: none;
-                    margin-top: 0px;
-                    margin-bottom: -220px;
+                    margin-top: -120px;
+                    margin-bottom: 0px;
                 }
             </style>
         </head>
