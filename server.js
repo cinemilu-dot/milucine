@@ -237,6 +237,33 @@ app.get('/', verificarAutenticacao, (req, res) => {
     `);
 });
 
+// Rota Wrapper/Proxy para mascarar o iframe externo com a sua própria URL
+app.get('/frame-player', verificarAutenticacao, (req, res) => {
+    const targetUrl = req.query.url;
+
+    if (!targetUrl || !targetUrl.startsWith('https://streambetter.lol')) {
+        return res.status(400).send('URL inválida.');
+    }
+
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+                iframe { width: 100%; height: 100%; border: none; }
+                .embed-btn { display: none !important; }
+            </style>
+        </head>
+        <body>
+            <iframe src="${targetUrl}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
+        </body>
+        </html>
+    `);
+});
+
 // Rota Dinâmica para Extrair e Reproduzir Episódios por ID
 app.get('/player/:id', verificarAutenticacao, async (req, res) => {
     const episodeId = req.params.id;
@@ -288,10 +315,14 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
                     if (match) streamUrl = `https://streambetter.lol/serie/${match[1]}`;
                 }
                 const tipoAudio = canal.type === 1 ? 'Dublado' : 'Legendado';
+                
+                // MASCARAMENTO DA URL: Passa a URL externa codificada para a rota interna /frame-player
+                const urlMascarada = `/frame-player?url=${encodeURIComponent(streamUrl)}`;
+
                 listaCanaisHtml += `
                     <div style="margin-bottom: 20px;">
                         <h4 style="color: #aaa; margin-bottom: 8px;">Opção ${i + 1} (${tipoAudio})</h4>
-                        <iframe src="${streamUrl}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000;"></iframe>
+                        <iframe src="${urlMascarada}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000;"></iframe>
                     </div>
                 `;
             }
