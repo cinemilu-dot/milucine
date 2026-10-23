@@ -1,0 +1,1 @@
+<iframe src="https://superflixapi.fun/serie/95350/1/2" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; accelerometer *; gyroscope *" allowfullscreen webkitallowfullscreen mozallowfullscreen frameborder="0" scrolling="no" style="width:100%;aspect-ratio:16/9;height:auto;max-width:100%;border:0;border-radius:12px;"></iframe>
