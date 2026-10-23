@@ -231,7 +231,7 @@ app.get('/', verificarAutenticacao, (req, res) => {
             </div>
             <div class="portal-container">
                 <iframe src="${STREAMBETTER_CATALOGO}" 
-                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-autoplay"
+                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-autoplay allow-popups allow-popups-to-escape-sandbox"
                         allowfullscreen 
                         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
             </div>
@@ -295,7 +295,7 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
                     <div style="margin-bottom: 20px;">
                         <h4 style="color: #aaa; margin-bottom: 8px;">Opção ${i + 1} (${tipoAudio})</h4>
                         <iframe src="${streamUrl}" 
-                                sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-autoplay"
+                                sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-autoplay allow-popups allow-popups-to-escape-sandbox"
                                 allow="autoplay; encrypted-media; picture-in-picture; fullscreen" 
                                 allowfullscreen 
                                 style="width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000;"></iframe>
