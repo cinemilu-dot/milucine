@@ -172,7 +172,7 @@ app.get('/', verificarAutenticacao, (req, res) => {
                     width: 100%;
                     height: calc(100% + 340px);
                     border: none;
-                    margin-top: -120px;
+                    margin-top: -140px;
                 }
             </style>
         </head>
