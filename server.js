@@ -111,7 +111,7 @@ app.post('/login', (req, res) => {
     return res.redirect('/');
 });
 
-// Página Principal (Catálogo com o rodapé de baixo esticado e oculto)
+// Página Principal (Catálogo com o rodapé cortado por completo)
 app.get('/', verificarAutenticacao, (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -170,10 +170,10 @@ app.get('/', verificarAutenticacao, (req, res) => {
                 }
                 iframe {
                     width: 100%;
-                    height: calc(100% + 260px);
+                    height: calc(100% + 500px);
                     border: none;
-                    margin-top: -120px;
-                    margin-bottom: -140px;
+                    margin-top: -350px;
+                    margin-bottom: 0px;
                 }
             </style>
         </head>
