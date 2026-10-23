@@ -111,7 +111,7 @@ app.post('/login', (req, res) => {
     return res.redirect('/');
 });
 
-// Página Principal (Catálogo com margin-top ajustado para -150px)
+// Página Principal (Catálogo com margin-top ajustado para -190px)
 app.get('/', verificarAutenticacao, (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -172,7 +172,7 @@ app.get('/', verificarAutenticacao, (req, res) => {
                     width: 100%;
                     height: calc(100% + 280px);
                     border: none;
-                    margin-top: -150px;
+                    margin-top: -190px;
                     margin-bottom: -160px;
                 }
             </style>
