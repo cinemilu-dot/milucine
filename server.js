@@ -122,17 +122,18 @@ app.post('/login', (req, res) => {
         return res.send(telaLogin('❌ Usuário ou senha incorretos!'));
     }
 
+    // Limpa sessões expiradas primeiro
+    limparSessoesExpiradas(usuario);
+
+    // Garante obrigatoriamente que o Map do usuário existe para evitar leituras de undefined (.size)
     if (!sessoesAtivas.has(usuario)) {
         sessoesAtivas.set(usuario, new Map());
     }
-
-    // Limpa sessões expiradas antes de checar a quantidade
-    limparSessoesExpiradas(usuario);
+    
     const sessoesDoUsuario = sessoesAtivas.get(usuario);
 
-    // ESTRATÉGIA: Se ultrapassar o limite de 2 conexões, remove a sessão mais antiga para abrir espaço para a nova
+    // ESTRATÉGIA: Se ultrapassar o limite de 2 conexões, remove a sessão mais antiga
     if (sessoesDoUsuario.size >= 2) {
-        // Encontra a chave da sessão mais antiga
         let menorTimestamp = Infinity;
         let sessaoMaisAntiga = null;
 
@@ -243,9 +244,18 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
         const paramsOptions = new URLSearchParams({ action: 'getOptions', contentid: episodeId });
         const resOptions = await fetch(API_URL, {
             method: 'POST',
-            headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://plenoflu.com/', 'X-Requested-With': 'XMLHttpRequest' },
+            headers: { 
+                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1', 
+                'Referer': 'https://plenoflu.com/', 
+                'X-Requested-With': 'XMLHttpRequest' 
+            },
             body: paramsOptions
         });
+        
+        if (!resOptions.ok) {
+            throw new Error(`Erro na API externa: ${resOptions.status}`);
+        }
+
         const dataOptions = await resOptions.json();
 
         if (!dataOptions.data || !dataOptions.data.options || dataOptions.data.options.length === 0) {
@@ -260,9 +270,15 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
             const paramsPlayer = new URLSearchParams({ action: 'getPlayer', video_id: canal.ID });
             const resPlayer = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://plenoflu.com/', 'X-Requested-With': 'XMLHttpRequest' },
+                headers: { 
+                    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1', 
+                    'Referer': 'https://plenoflu.com/', 
+                    'X-Requested-With': 'XMLHttpRequest' 
+                },
                 body: paramsPlayer
             });
+            
+            if (!resPlayer.ok) continue;
             const dataPlayer = await resPlayer.json();
 
             if (dataPlayer.data && dataPlayer.data.video_url) {
@@ -284,7 +300,7 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
         res.send(`
             <!DOCTYPE html>
             <html lang="pt-BR">
-            <head><meta charset="UTF-8"><title>Player - ID ${episodeId}</title></head>
+            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Player - ID ${episodeId}</title></head>
             <body style="background:#0f1014; color:#fff; font-family:sans-serif; padding:20px; max-width:900px; margin:auto;">
                 <h2>📺 Reprodutor de Episódio (ID: ${episodeId})</h2>
                 <a href="/" style="color:#e50914; text-decoration:none; display:inline-block; margin-bottom:20px;">← Voltar ao Início</a>
@@ -293,7 +309,8 @@ app.get('/player/:id', verificarAutenticacao, async (req, res) => {
             </html>
         `);
     } catch (err) {
-        res.status(500).send(`<h3 style="color:red;text-align:center;">Erro ao processar: ${err.message}</h3>`);
+        console.error('Erro na rota /player:', err.message);
+        res.status(500).send(`<h3 style="color:red;text-align:center;font-family:sans-serif;margin-top:20vh;">❌ Erro interno ao processar o vídeo no telemóvel. Tente novamente.</h3>`);
     }
 });
 
