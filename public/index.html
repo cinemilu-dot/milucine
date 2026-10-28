@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiluCine</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --btn-link-color: #1a2338;
+            --accent-color: #38bdf8;
+            --text-color: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone-frame {
+            width: 100%;
+            max-width: 450px;
+            height: 100%;
+            max-height: 900px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 480px) {
+            .phone-frame {
+                border-radius: 24px;
+                height: 90vh;
+                border: 4px solid #1e293b;
+            }
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .screen.active { display: flex; }
+
+        h1.header-title {
+            font-size: 26px;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .search-box { position: relative; margin-bottom: 15px; }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border-radius: 12px;
+            border: 1px solid #1e3a8a;
+            background: #171e2e;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .grid-categorias {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .btn-categoria {
+            color: var(--text-color);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 16px;
+            height: 105px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+        }
+
+        .btn-categoria:active {
+            transform: scale(0.95);
+            border-color: var(--accent-color);
+        }
+
+        .cat-icon { font-size: 24px; }
+
+        .titulo-links {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: var(--accent-color);
+        }
+
+        .container-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .placeholder-busca {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 40px;
+            line-height: 1.5;
+        }
+
+        .btn-canal {
+            background-color: var(--btn-link-color);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            height: 52px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .btn-canal:active {
+            background-color: #1e40af;
+            color: #ffffff;
+        }
+
+        .btn-voltar {
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            height: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .webview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .btn-voltar-web {
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .webview-container {
+            flex-grow: 1;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #1e3a8a;
+        }
+
+        .webview-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(11, 15, 25, 0.94);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-card {
+            background: #171e2e;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 20px;
+            padding: 25px;
+            width: 85%;
+            text-align: center;
+        }
+
+        .modal-card h2 { color: var(--accent-color); margin-bottom: 8px; font-size: 18px; }
+        .modal-card p { font-size: 13px; color: #94a3b8; margin-bottom: 15px; }
+
+        .pin-input {
+            width: 80%;
+            padding: 12px;
+            font-size: 20px;
+            letter-spacing: 6px;
+            text-align: center;
+            border-radius: 10px;
+            border: 1px solid #1e3a8a;
+            background: #0b0f19;
+            color: #ffffff;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        .modal-btns { display: flex; gap: 10px; }
+        .btn-modal { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-confirmar { background: #0284c7; color: white; }
+        .btn-cancelar { background: #334155; color: white; }
+        .erro-pin { color: #f87171; font-size: 12px; margin-top: 8px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="phone-frame">
+        <!-- TELA 1: CATEGORIAS -->
+        <div id="tela-categorias" class="screen active">
+            <h1 class="header-title">🎬 MiluCine</h1>
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="busca-categoria" class="search-input" placeholder="Pesquisar categoria..." oninput="filtrarCategorias()" />
+            </div>
+            <div class="grid-categorias" id="grid-cat"></div>
+        </div>
+
+        <!-- TELA 2: LISTA DE CANAIS -->
+        <div id="tela-links" class="screen">
+            <div class="titulo-links" id="titulo-categoria-ativa">Categoria</div>
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="busca-links" class="search-input" placeholder="Digite o nome (ex: The Rookie)..." oninput="realizarBuscaDinamica()" />
+            </div>
+            <div class="container-links" id="container-links-ativos">
+                <div class="placeholder-busca">Digite acima o nome do filme ou série para gerar os canais de busca.</div>
+            </div>
+            <button class="btn-voltar" onclick="voltarMenu()">&lt; Voltar</button>
+        </div>
+
+        <!-- TELA 3: NAVEGADOR INTEGRADO VIA PROXY -->
+        <div id="tela-webview" class="screen">
+            <div class="webview-header">
+                <button class="btn-voltar-web" onclick="voltarParaCanais()">&lt; Voltar aos Canais</button>
+                <span id="webview-titulo" style="font-size: 14px; color: #38bdf8; font-weight: bold;">Canal</span>
+            </div>
+            <div class="webview-container">
+                <iframe id="meu-iframe" src=""></iframe>
+            </div>
+        </div>
+
+        <!-- MODAL PIN -->
+        <div id="modal-pin" class="modal-overlay">
+            <div class="modal-card">
+                <h2>🔒 Conteúdo Restrito</h2>
+                <p>Insira a senha de 4 dígitos para acessar:</p>
+                <input type="password" id="input-pin" class="pin-input" maxlength="4" placeholder="••••" />
+                <div id="msg-erro" class="erro-pin">Senha incorreta! Tente novamente.</div>
+                <div class="modal-btns">
+                    <button class="btn-modal btn-cancelar" onclick="fecharModalPin()">Cancelar</button>
+                    <button class="btn-modal btn-confirmar" onclick="verificarPin()">Acessar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SENHA_ADULTO = "1234";
+
+        const MEUS_LINKS = {
+            "Filmes": { 
+                icon: "🍿", protegido: false, 
+                fontes: [
+                    { canal: "Canal 01", urlTemplate: (q) => `https://www.pobreflix.sale/?s=${encodeURIComponent(q)}` },
+                    { canal: "Canal 02", urlTemplate: (q) => `https://redecanais4k.my/search.php?keywords=${encodeURIComponent(q)}` },
+                    { canal: "Canal 03", urlTemplate: (q) => `https://www.pobreflixtvlife.com/buscar?q=${encodeURIComponent(q)}` }
+                ]
+            },
+            "Séries": { 
+                icon: "📺", protegido: false, 
+                fontes: [
+                    { canal: "Canal 01", urlTemplate: (q) => `https://www.pobreflix.sale/?s=${encodeURIComponent(q)}` },
+                    { canal: "Canal 02", urlTemplate: (q) => `https://redecanais4k.my/search.php?keywords=${encodeURIComponent(q)}` },
+                    { canal: "Canal 03", urlTemplate: (q) => `https://www.pobreflixtvlife.com/buscar?q=${encodeURIComponent(q)}` }
+                ]
+            },
+            "Esportes ao vivo": { 
+                icon: "⚽", protegido: false, 
+                fontes: [
+                    { canal: "Canal 01", urlTemplate: (q) => `https://streambetter.lol` },
+                    { canal: "Canal 02", urlTemplate: (q) => `https://streambetter.lol` },
+                    { canal: "Canal 03", urlTemplate: (q) => `https://streambetter.lol` }
+                ]
+            },
+            "Dorama": { 
+                icon: "🎭", protegido: false, 
+                fontes: [
+                    { canal: "Canal 01", urlTemplate: (q) => `https://www.pobreflix.sale/?s=${encodeURIComponent(q)}` },
+                    { canal: "Canal 02", urlTemplate: (q) => `https://redecanais4k.my/search.php?keywords=${encodeURIComponent(q)}` },
+                    { canal: "Canal 03", urlTemplate: (q) => `https://www.pobreflixtvlife.com/buscar?q=${encodeURIComponent(q)}` }
+                ]
+            },
+            "Anime": { 
+                icon: "⚔️", protegido: false, 
+                fontes: [
+                    { canal: "Canal 01", urlTemplate: (q) => `https://www.pobreflix.sale/?s=${encodeURIComponent(q)}` },
+                    { canal: "Canal 02", urlTemplate: (q) => `https://redecanais4k.my/search.php?keywords=${encodeURIComponent(q)}` },
+                    { canal: "Canal 03", urlTemplate: (q) => `https://www.pobreflixtvlife.com/buscar?q=${encodeURIComponent(q)}` }
+                ]
+            },
+            "Conteúdo adulto": { 
+                icon: "🔒", protegido: true, 
+                fontes: [
+                    { canal: "Canal 01", urlTemplate: (q) => `https://www.pobreflix.sale/?s=${encodeURIComponent(q)}` },
+                    { canal: "Canal 02", urlTemplate: (q) => `https://redecanais4k.my/search.php?keywords=${encodeURIComponent(q)}` },
+                    { canal: "Canal 03", urlTemplate: (q) => `https://www.pobreflixtvlife.com/buscar?q=${encodeURIComponent(q)}` }
+                ]
+            }
+        };
+
+        let categoriaAtiva = null;
+        let categoriaPendente = null;
+
+        function carregarCategorias(filtro = '') {
+            const grid = document.getElementById('grid-cat');
+            grid.innerHTML = '';
+            for (let categoria in MEUS_LINKS) {
+                if (filtro && !categoria.toLowerCase().includes(filtro.toLowerCase())) continue;
+                const item = MEUS_LINKS[categoria];
+                const btn = document.createElement('button');
+                btn.className = 'btn-categoria';
+                btn.innerHTML = `<span class="cat-icon">${item.icon}</span><b>${categoria}</b>`;
+                btn.onclick = () => clicarCategoria(categoria);
+                grid.appendChild(btn);
+            }
+        }
+
+        function filtrarCategorias() {
+            carregarCategorias(document.getElementById('busca-categoria').value);
+        }
+
+        function clicarCategoria(categoria) {
+            if (MEUS_LINKS[categoria].protegido) {
+                categoriaPendente = categoria;
+                document.getElementById('input-pin').value = '';
+                document.getElementById('msg-erro').style.display = 'none';
+                document.getElementById('modal-pin').style.display = 'flex';
+                document.getElementById('input-pin').focus();
+            } else {
+                abrirCategoria(categoria);
+            }
+        }
+
+        function verificarPin() {
+            if (document.getElementById('input-pin').value === SENHA_ADULTO) {
+                fecharModalPin();
+                if (categoriaPendente) abrirCategoria(categoriaPendente);
+            } else {
+                document.getElementById('msg-erro').style.display = 'block';
+                document.getElementById('input-pin').value = '';
+            }
+        }
+
+        function fecharModalPin() {
+            document.getElementById('modal-pin').style.display = 'none';
+            categoriaPendente = null;
+        }
+
+        function abrirCategoria(categoria) {
+            categoriaAtiva = categoria;
+            const catObj = MEUS_LINKS[categoria];
+            document.getElementById('titulo-categoria-ativa').innerHTML = `<b>${catObj.icon} ${categoria}</b>`;
+            document.getElementById('busca-links').value = '';
+            document.getElementById('container-links-ativos').innerHTML = `<div class="placeholder-busca">Digite acima o nome do filme ou série para gerar os canais de busca.</div>`;
+
+            document.getElementById('tela-categorias').classList.remove('active');
+            document.getElementById('tela-webview').classList.remove('active');
+            document.getElementById('tela-links').classList.add('active');
+            document.getElementById('busca-links').focus();
+        }
+
+        function realizarBuscaDinamica() {
+            const termo = document.getElementById('busca-links').value.trim();
+            const container = document.getElementById('container-links-ativos');
+            container.innerHTML = '';
+
+            if (termo === '') {
+                container.innerHTML = `<div class="placeholder-busca">Digite acima o nome do filme ou série para gerar os canais de busca.</div>`;
+                return;
+            }
+
+            MEUS_LINKS[categoriaAtiva].fontes.forEach(fonte => {
+                const urlOriginal = fonte.urlTemplate(termo);
+                const urlProxy = `/proxy?url=${encodeURIComponent(urlOriginal)}`;
+                
+                const btnCanal = document.createElement('button');
+                btnCanal.className = 'btn-canal';
+                btnCanal.innerHTML = `▶ ${fonte.canal}`;
+                btnCanal.onclick = () => abrirNoNavegadorInterno(fonte.canal, urlProxy);
+                container.appendChild(btnCanal);
+            });
+        }
+
+        function abrirNoNavegadorInterno(nomeCanal, urlProxy) {
+            document.getElementById('webview-titulo').innerText = nomeCanal;
+            document.getElementById('meu-iframe').src = urlProxy;
+
+            document.getElementById('tela-links').classList.remove('active');
+            document.getElementById('tela-webview').classList.add('active');
+        }
+
+        function voltarParaCanais() {
+            document.getElementById('meu-iframe').src = '';
+            document.getElementById('tela-webview').classList.remove('active');
+            document.getElementById('tela-links').classList.add('active');
+        }
+
+        function voltarMenu() {
+            document.getElementById('tela-links').classList.remove('active');
+            document.getElementById('tela-categorias').classList.add('active');
+        }
+
+        carregarCategorias();
+    </script>
+</body>
+</html>
