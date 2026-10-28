@@ -1,18 +1,13 @@
 {
-  "name": "meu-extractor",
+  "name": "milucine",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "MiluCine - Plataforma de Streaming Integrada",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "cookie-parser": "^1.4.7",
-    "express": "^5.3.0",
-    "open": "^11.0.4"
+    "express": "^4.19.2",
+    "http-proxy-middleware": "^3.0.0"
   }
 }
